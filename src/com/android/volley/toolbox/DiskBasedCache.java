@@ -17,6 +17,7 @@
 package com.android.volley.toolbox;
 
 import android.os.SystemClock;
+import android.util.Pair;
 
 import com.android.volley.Cache;
 import com.android.volley.VolleyLog;
@@ -29,10 +30,12 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -350,8 +353,9 @@ public class DiskBasedCache implements Cache {
         public long softTtl;
 
         /** Headers from the response resulting in this cache entry. */
-        public Map<String, String> responseHeaders;
-
+        // public Map<String, String> responseHeaders;
+        public List<Pair<String, String>> responseHeaders;
+        
         private CacheHeader() { }
 
         /**
@@ -389,7 +393,7 @@ public class DiskBasedCache implements Cache {
             entry.serverDate = readLong(is);
             entry.ttl = readLong(is);
             entry.softTtl = readLong(is);
-            entry.responseHeaders = readStringStringMap(is);
+            entry.responseHeaders = readStringStringPairList(is);
             return entry;
         }
 
@@ -419,7 +423,7 @@ public class DiskBasedCache implements Cache {
                 writeLong(os, serverDate);
                 writeLong(os, ttl);
                 writeLong(os, softTtl);
-                writeStringStringMap(responseHeaders, os);
+                writeStringStringPairList(responseHeaders, os);
                 os.flush();
                 return true;
             } catch (IOException e) {
@@ -538,19 +542,31 @@ public class DiskBasedCache implements Cache {
             writeInt(os, 0);
         }
     }
+    
+    static void writeStringStringPairList(List<Pair<String, String>> list, OutputStream os) throws IOException {
+        if (list != null) {
+            writeInt(os, list.size());
+            for (Pair<String, String> pair : list) {
+                writeString(os, pair.first);
+                writeString(os, pair.second);
+            }
+        } else {
+            writeInt(os, 0);
+        }
+    }
+    
 
-    static Map<String, String> readStringStringMap(InputStream is) throws IOException {
+    static List<Pair<String, String>> readStringStringPairList(InputStream is) throws IOException {
         int size = readInt(is);
-        Map<String, String> result = (size == 0)
-                ? Collections.<String, String>emptyMap()
-                : new HashMap<String, String>(size);
+        List<Pair<String, String>> result = (size == 0)
+                ? Collections.<Pair<String, String>>emptyList()
+                : new ArrayList<Pair<String, String>>(size);
         for (int i = 0; i < size; i++) {
             String key = readString(is).intern();
             String value = readString(is).intern();
-            result.put(key, value);
+            result.add(new Pair<String, String>(key, value));
         }
         return result;
     }
-
 
 }

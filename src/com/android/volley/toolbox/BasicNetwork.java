@@ -17,6 +17,7 @@
 package com.android.volley.toolbox;
 
 import android.os.SystemClock;
+import android.util.Pair;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
@@ -43,8 +44,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,7 +88,7 @@ public class BasicNetwork implements Network {
         while (true) {
             HttpResponse httpResponse = null;
             byte[] responseContents = null;
-            Map<String, String> responseHeaders = new HashMap<String, String>();
+            List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
             try {
                 // Gather headers.
                 Map<String, String> headers = new HashMap<String, String>();
@@ -238,10 +241,10 @@ public class BasicNetwork implements Network {
     /**
      * Converts Headers[] to Map<String, String>.
      */
-    private static Map<String, String> convertHeaders(Header[] headers) {
-        Map<String, String> result = new HashMap<String, String>();
+    private static List<Pair<String, String>> convertHeaders(Header[] headers) {
+        List<Pair<String, String>> result = new ArrayList<Pair<String, String>>();
         for (int i = 0; i < headers.length; i++) {
-            result.put(headers[i].getName(), headers[i].getValue());
+        	result.add(new Pair<String, String>(headers[i].getName(), headers[i].getValue()));
         }
         return result;
     }
